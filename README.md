@@ -16,7 +16,19 @@ Espresso holds a `PreventUserIdleDisplaySleep` power assertion, the same lock a 
 - macOS 13 Ventura or later
 - Xcode Command Line Tools for `swiftc` and `codesign` (install with `xcode-select --install`)
 
-## Build and install
+## Install from a release
+
+1. Download `Espresso-<version>.dmg` from the Releases page.
+2. Open it and drag **Espresso** onto **Applications**.
+3. Open Espresso from Applications. Because the app is not notarized, macOS blocks it the first time. Go to **System Settings → Privacy & Security**, scroll down to the message about Espresso, and click **Open Anyway**.
+
+If you prefer the terminal, you can clear the quarantine flag instead:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Espresso.app
+```
+
+## Build from source
 
 Build the app into `build/Espresso.app`:
 
@@ -36,7 +48,13 @@ Then open it:
 open /Applications/Espresso.app
 ```
 
-The build script compiles `Sources/Espresso.swift` for your Mac's architecture, writes the `Info.plist`, and ad-hoc signs the bundle. Install it to `/Applications` before you turn on **Launch at Login** so the login item points at a stable location.
+Build it and package it as `build/Espresso-<version>.dmg` for distribution:
+
+```bash
+./build.sh dmg
+```
+
+The build script compiles `Sources/Espresso.swift` as a universal binary (Apple Silicon and Intel), writes the `Info.plist`, and ad-hoc signs the bundle. The version number is set by `VERSION` at the top of `build.sh`. Install it to `/Applications` before you turn on **Launch at Login** so the login item points at a stable location.
 
 ## Usage
 
@@ -59,11 +77,11 @@ pmset -g assertions | grep Espresso
 ## Limitations
 
 - Espresso only blocks the *idle* screensaver and display sleep. Locking the screen yourself, hot corners, and closing the lid still work as usual.
-- The app is ad-hoc signed, not notarized. It's meant to be built and run on your own Mac.
+- The app is ad-hoc signed, not notarized, so Gatekeeper asks you to approve it the first time you open a downloaded copy (see [Install from a release](#install-from-a-release)).
 
 ## Project layout
 
 ```
 Sources/Espresso.swift   The whole app: power assertion wrapper and menu bar UI
-build.sh                 Builds, signs and optionally installs Espresso.app
+build.sh                 Builds and signs Espresso.app, then optionally installs it or packages a .dmg
 ```
